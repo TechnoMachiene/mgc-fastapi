@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MGC Sales Assistant</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --brand: #1d4ed8;
+      --brand-soft: #dbeafe;
+      --success: #166534;
+      --success-soft: #dcfce7;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 24px;
+      margin-top: 28px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .ask-box, .score-box {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    input, button {
+      font: inherit;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .field-row label {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .field-row input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .field-row input:focus {
+      outline: 2px solid rgba(29, 78, 216, 0.18);
+      border-color: var(--brand);
+    }
+
+    .primary-btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 12px;
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    .primary-btn:hover { opacity: 0.96; }
+
+    .result-box {
+      min-height: 120px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+      color: var(--ink);
+    }
+
+    .score-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 16px;
+      margin-top: 6px;
+    }
+
+    .score-list label {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+      .score-list { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; gap: 8px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div>
+        <div class="brand">MGC Sales Assistant</div>
+        <div class="subtitle">Property sales support for document Q&A and lead scoring</div>
+      </div>
+    </header>
+
+    <main class="card" style="margin-top: 28px;">
+      <h2>Ask the document assistant</h2>
+      <p>Ask about pricing, availability, policies, or property features using the stored project documents.</p>
+
+      <form id="ask-form" class="ask-box">
+        <div class="field-row">
+          <label for="question">Your question</label>
+          <input type="text" id="question" name="question" placeholder="e.g. What is the base price for a 2-bedroom unit?">
+        </div>
+        <button class="primary-btn" type="submit">Ask</button>
+      </form>
+
+      <div id="ask-result" class="result-box">Your answer will appear here.</div>
+    </main>
+  </div>
+
+  <script>
+    document.getElementById('ask-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const question = document.getElementById('question').value.trim();
+      const resultBox = document.getElementById('ask-result');
+
+      if (!question) {
+        resultBox.textContent = 'Please enter a question first.';
+        return;
+      }
+
+      resultBox.textContent = 'Loading...';
+
+      const res = await fetch('/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'question=' + encodeURIComponent(question)
+      });
+
+      const data = await res.json();
+      resultBox.textContent = data.error
+        ? data.error
+        : data.answer +
+          (data.source ? '\n\nSource: ' + data.source : '') +
+          (data.confidence !== undefined ? '\nConfidence: ' + data.confidence : '');
+    });
+  </script>
+</body>
+</html>
