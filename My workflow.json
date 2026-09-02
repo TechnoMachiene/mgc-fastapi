@@ -1,0 +1,92 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ask-mgc",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cc2ceeeb-5401-41b7-bb3e-81d249c8b8e5",
+      "name": "Webhook",
+      "webhookId": "0f46224e-a80b-4876-8c19-5e564573fbd6"
+    },
+    {
+      "parameters": {
+        "agentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "BhjJmOGV2mrIvoCI",
+          "cachedResultName": "MGC Sales Document Assistant"
+        },
+        "message": "= {{ $json.body.question }}",
+        "advanced": {}
+      },
+      "type": "n8n-nodes-base.messageAnAgent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        -50
+      ],
+      "id": "fbe894a6-0b21-4bbb-8be5-16c3c955c09d",
+      "name": "Message an Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "8992277b-3aae-44af-8fd9-3c7e52e88189",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Message an Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message an Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "adedb3fe-4f2e-4bc8-988e-3025f0ff80b9",
+  "meta": {
+    "instanceId": "9b24dea5fb0ce30a329e2db7968156e80d5617dcd070e8d73615b87f9b4b8950"
+  },
+  "nodeGroups": [],
+  "id": "SRGSCi2WE2gWK0SB",
+  "tags": []
+}
